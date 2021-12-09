@@ -7,9 +7,47 @@ interface Todo {
   isCompleted: boolean;
 }
 
+const TodoItems: React.FC<{ t: Todo; setTodo: (t: Todo | null) => void }> = ({
+  t,
+  setTodo,
+}) => {
+  return (
+    <li className="bg-gray-100 flex items-center justify-between mb-2 rounded-lg">
+      <input
+        type="text"
+        value={t.name}
+        disabled={t.isCompleted}
+        onChange={(e) => setTodo({ ...t, name: e.target.value })}
+        className={`py-2 px-4 text-black rounded-l flex-1 border-2 border-transparent focus:border-green-500 outline-none box-border ${
+          t.isCompleted ? "" : "bg-gray-200"
+        }`}
+      />
+
+      <button
+        className={
+          t.isCompleted
+            ? "py-2 px-4 text-green-500 cursor-default"
+            : "py-2 px-4 bg-green-500 text-white border-2 border-transparent"
+        }
+        onClick={(_) => setTodo({ ...t, isCompleted: true })}
+        disabled={t.isCompleted}
+      >
+        {t.isCompleted ? "Completed" : "Mark Completed"}
+      </button>
+      <button
+        className="py-2 px-4 bg-red-500 text-white rounded-r border-2 border-transparent"
+        onClick={(_) => setTodo(null)}
+      >
+        Remove
+      </button>
+    </li>
+  );
+};
+
 function App() {
   const [todo, setTodo] = useState<Todo[]>([]);
   const [value, setValue] = useState("");
+
   return (
     <div className="max-w-2xl mx-auto my-4 font-bold">
       <h1 className="text-center text-4xl mb-6">Todos</h1>
@@ -41,28 +79,18 @@ function App() {
       <ul className="mt-4">
         {todo.map((t, i) => {
           return (
-            <li
-              className="p-4 bg-gray-100 flex items-center justify-between mb-2 rounded-lg"
-              key={i}
-            >
-              <p className={t.isCompleted ? "line-through" : ""}>{t.name}</p>
-              <button
-                className={
-                  t.isCompleted
-                    ? "py-2 px-4 text-green-500 cursor-default"
-                    : "py-2 px-4 bg-green-500 text-white rounded"
-                }
-                onClick={(_) => {
-                  const newTodo = [...todo];
-                  newTodo[i].isCompleted = true;
-                  newTodo.sort((a, b) => (a.isCompleted ? 1 : -1));
-                  setTodo(newTodo);
-                }}
-                disabled={t.isCompleted}
-              >
-                {t.isCompleted ? "Completed" : "Mark Completed"}
-              </button>
-            </li>
+            <TodoItems
+              t={t}
+              setTodo={(newTodo) => {
+                setTodo((prev) => {
+                  if (newTodo) {
+                    return prev.map((td, j) => (i === j ? newTodo : td));
+                  } else {
+                    return prev.filter((_, j) => i !== j);
+                  }
+                });
+              }}
+            />
           );
         })}
       </ul>
